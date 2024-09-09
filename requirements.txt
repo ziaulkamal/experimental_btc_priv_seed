@@ -3,3 +3,4 @@ bip-utils
 ecdsa 
 base58
 pycryptodome
+requests
