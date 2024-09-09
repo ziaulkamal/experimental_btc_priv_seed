@@ -2,3 +2,4 @@ mnemonic
 bip-utils 
 ecdsa 
 base58
+pycryptodome

@@ -5,6 +5,7 @@ import json
 from ecdsa import SigningKey, SECP256k1
 from mnemonic import Mnemonic
 from bip_utils import Bip44, Bip44Coins, Bip44Changes, Bip39SeedGenerator
+from Crypto.Hash import RIPEMD160  # Import RIPEMD160 from PyCryptodome
 
 # Buat folder output jika belum ada
 output_dir = "output"
@@ -39,7 +40,7 @@ def generate_bitcoin_data():
 
     # Bitcoin address generation (Base58Check encoding) from secp256k1 public key
     sha256_1 = hashlib.sha256(public_key_bytes).digest()
-    ripemd160 = hashlib.new('ripemd160', sha256_1).digest()
+    ripemd160 = RIPEMD160.new(sha256_1).digest()  # Use RIPEMD160 from PyCryptodome
     hashed_public_key = b'\x00' + ripemd160  # 0x00 is the prefix for a mainnet Bitcoin address
 
     # Perform double SHA-256 hashing
