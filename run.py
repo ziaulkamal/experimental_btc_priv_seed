@@ -5,7 +5,8 @@ import json
 from ecdsa import SigningKey, SECP256k1
 from mnemonic import Mnemonic
 from bip_utils import Bip44, Bip44Coins, Bip44Changes, Bip39SeedGenerator
-from Crypto.Hash import RIPEMD160  # Import RIPEMD160 from PyCryptodome
+from Crypto.Hash import RIPEMD160
+from multiprocessing import Pool, cpu_count
 
 # Buat folder output jika belum ada
 output_dir = "output"
@@ -67,15 +68,25 @@ def save_to_json(data, address):
         json.dump(data, f, indent=4)
     print(f"Data saved to {filename}")
 
-# Fungsi utama untuk generate banyak data
-def generate_multiple_data(count):
-    for i in range(count):
-        bitcoin_data = generate_bitcoin_data()
-        # Save the data with the address as the filename
-        save_to_json(bitcoin_data, bitcoin_data['address_bip44'])
+# Fungsi utama untuk generate banyak data secara paralel
+def generate_and_save(index):
+    bitcoin_data = generate_bitcoin_data()
+    save_to_json(bitcoin_data, bitcoin_data['address_bip44'])
 
-# Input jumlah data yang ingin di-generate
-count = int(input("Enter how many addresses you want to generate: "))
+# Fungsi untuk menggunakan multiprocessing
+def generate_multiple_data_parallel(count, num_cores):
+    with Pool(processes=num_cores) as pool:
+        pool.map(generate_and_save, range(count))
 
-# Generate dan simpan data
-generate_multiple_data(count)
+# Input jumlah data dan core CPU yang ingin digunakan
+if __name__ == '__main__':
+    count = int(input("Enter how many addresses you want to generate: "))
+    max_cores = cpu_count()
+    print(f"Available CPU cores: {max_cores}")
+    num_cores = int(input(f"Enter how many cores you want to use (1 to {max_cores}): "))
+    
+    if num_cores < 1 or num_cores > max_cores:
+        print(f"Invalid number of cores. Please enter a number between 1 and {max_cores}.")
+    else:
+        # Generate dan simpan data secara paralel menggunakan CPU cores yang dipilih
+        generate_multiple_data_parallel(count, num_cores)
